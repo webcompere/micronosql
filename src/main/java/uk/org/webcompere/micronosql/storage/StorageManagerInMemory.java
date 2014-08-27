@@ -5,23 +5,19 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class StorageManagerInMemory extends StorageManagerBase implements StorageManager {
+public class StorageManagerInMemory implements StorageManager {
 	private Map<Class<?>, Map<String, String>> storage = new HashMap<>();
+
 	@Override
-	public <T> void store(String key, T object) {
-		Map<String, String> table = getTable(object);
+	public <T> void store(String key, String payload, Class<T> type) {
+		Map<String, String> table = getTable(type);
 		try {
-			String document = convertToString(object);
-			writeToTable(table, key, document);
+			writeToTable(table, key, payload);
 		} catch (Exception e) {
 			throw new IllegalArgumentException("Cannot store " + key, e);
 		}
 	}
 
-	private <T> Map<String, String> getTable(T object) {
-		return getTable(object.getClass());
-	}
-	
 	private <T> Map<String, String> getTable(Class<T> type) {
 		synchronized(storage) {
 			if (storage.containsKey(type)) {
@@ -35,14 +31,9 @@ public class StorageManagerInMemory extends StorageManagerBase implements Storag
 
 
 	@Override
-	public <T> T find(String key, Class<T> type) {
+	public <T> String find(String key, Class<T> type) {
 		Map<String, String> table = getTable(type);
-		String payload = readFromTable(key, table);
-		if (payload == null) {
-			return null;
-		}
-		
-		return convertToObject(type, payload);
+		return readFromTable(key, table);
 	}
 
 
@@ -89,5 +80,6 @@ public class StorageManagerInMemory extends StorageManagerBase implements Storag
 			keys.addAll(table.keySet());
 		}
 	}
+
 
 }

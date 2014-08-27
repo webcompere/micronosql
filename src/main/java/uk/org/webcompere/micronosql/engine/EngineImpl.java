@@ -1,14 +1,22 @@
 package uk.org.webcompere.micronosql.engine;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+
 import uk.org.webcompere.micronosql.storage.StorageManager;
 
 public class EngineImpl implements Engine {
 	private StorageManager storageManager;
+	
+	protected final ObjectMapper mapper = new ObjectMapper();
+
 	private Map<Class<?>, TypeWrapper> typeWrappers = new HashMap<>();
 	
 	public EngineImpl(StorageManager storageManager) {
@@ -17,17 +25,33 @@ public class EngineImpl implements Engine {
 	
 	@Override
 	public <T> T find(Object key, Class<T> type) {
-		TypeWrapper wrapper = getTypeWrapper(type);
 		String keyAsString = key.toString();
 		
-		return storageManager.find(keyAsString, type);
+		String objectAsString = storageManager.find(keyAsString, type);
+		if (objectAsString == null) {
+			return null;
+		}
+		return convertToObject(type, objectAsString);
 	}
 
 	@Override
 	public <T> String store(T object) {
-		TypeWrapper wrapper = getTypeWrapper(object.getClass());
+		try {
+			Class<?> type = object.getClass();
+			
+			String key = keyFromObject(object, type);
+			String payload = convertToString(object);
+			
+			storageManager.store(key, payload, type);
+			return key;
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Could not store object", e);
+		}
+	}
+
+	private <T> String keyFromObject(T object, Class<?> type) {
+		TypeWrapper wrapper = getTypeWrapper(type);
 		String key = wrapper.getKey(object);
-		storageManager.store(key, object);
 		return key;
 	}
 	
@@ -55,6 +79,20 @@ public class EngineImpl implements Engine {
 	@Override
 	public <T> List<T> findAll(Class<T> type) {
 		return new OnDemandList<T>(type, this, findAllKeys(type));
+	}
+	
+	protected <T> T convertToObject(Class<T> type, String payload) {
+		try {
+			return mapper.reader(type).readValue(payload);
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Unable to read payload for type "+ type.getCanonicalName());
+		}
+	}
+	
+	protected <T> String convertToString(T object) throws IOException,
+			JsonGenerationException, JsonMappingException {
+		String document = mapper.writeValueAsString(object);
+		return document;
 	}
 
 }
