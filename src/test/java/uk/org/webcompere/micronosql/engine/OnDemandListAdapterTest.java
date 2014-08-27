@@ -1,12 +1,13 @@
 package uk.org.webcompere.micronosql.engine;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
-
 import uk.org.webcompere.micronosql.pojo.ExampleDocument;
 import uk.org.webcompere.micronosql.storage.StorageManagerInMemory;
 
@@ -48,4 +49,31 @@ public class OnDemandListAdapterTest {
 		assertTrue(list.contains(doc3));
 	}
 	
+	@Test
+	public void retainAll() {
+		// drop doc2
+		list.retainAll(Arrays.asList(doc1, doc3));
+		assertThat(list.size(), is(2));
+	}
+	
+	@Test
+	public void toArray() {
+		ExampleDocument[] array = list.toArray(new ExampleDocument[0]);
+		checkSameAnyOrder(Arrays.asList(array), doc1, doc2, doc3);
+	}
+	
+	@Test
+	public void subListAndArray() {
+		Object[] array = list.toArray();
+		
+		List<ExampleDocument> subList = list.subList(1, 3);
+		checkSameAnyOrder(subList, (ExampleDocument)array[1], (ExampleDocument)array[2]);
+	}
+	
+	private void checkSameAnyOrder(List<ExampleDocument> actual, ExampleDocument ... expected) {
+		assertThat(actual.size(), is(expected.length));
+		for(ExampleDocument d:expected) {
+			assertTrue(actual.contains(d));
+		}
+	}
 }
