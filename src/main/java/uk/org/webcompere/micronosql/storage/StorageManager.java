@@ -18,4 +18,11 @@ public interface StorageManager {
 	 * @return item
 	 */
 	<T> T find(String key, Class<T> type);
+	
+	/**
+	 * Delete the item if it exists
+	 * @param key key of the item
+	 * @param type type of the item
+	 */
+	<T> void delete(String key, Class<T> type);
 }

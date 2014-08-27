@@ -36,4 +36,11 @@ public class EngineImpl implements Engine {
 		return wrapper;
 	}
 
+	@Override
+	public <T> void delete(Object key, Class<T> type) {
+		String keyAsString = key.toString();
+		
+		storageManager.delete(keyAsString, type);
+	}
+
 }

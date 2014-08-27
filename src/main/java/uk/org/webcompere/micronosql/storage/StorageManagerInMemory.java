@@ -1,11 +1,7 @@
 package uk.org.webcompere.micronosql.storage;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
 
 public class StorageManagerInMemory extends StorageManagerBase implements StorageManager {
 	private Map<Class<?>, Map<String, String>> storage = new HashMap<>();
@@ -34,8 +30,35 @@ public class StorageManagerInMemory extends StorageManagerBase implements Storag
 			return table;
 		}
 	}
+
+
+	@Override
+	public <T> T find(String key, Class<T> type) {
+		Map<String, String> table = getTable(type);
+		String payload = readFromTable(key, table);
+		if (payload == null) {
+			return null;
+		}
+		
+		return convertToObject(type, payload);
+	}
+
+	@Override
+	public <T> void delete(String key, Class<T> type) {
+		Map<String, String> table = getTable(type);
+		deleteFromTable(key, table);		
+	}
+
 	
-	private <T> void writeToTable(Map<String, String> table, String key, String payload) {
+	private void deleteFromTable(String key, Map<String, String> table) {
+		synchronized(table) {
+			if (table.containsKey(key)) {
+				table.remove(key);
+			}
+		}
+	}
+
+	private void writeToTable(Map<String, String> table, String key, String payload) {
 		synchronized(table) {
 			table.put(key, payload);
 		}
@@ -49,17 +72,4 @@ public class StorageManagerInMemory extends StorageManagerBase implements Storag
 			return table.get(key);
 		}
 	}
-
-	@Override
-	public <T> T find(String key, Class<T> type) {
-		Map<String, String> table = getTable(type);
-		String payload = readFromTable(key, table);
-		if (payload == null) {
-			return null;
-		}
-		
-		return convertToObject(type, payload);
-	}
-
-	
 }

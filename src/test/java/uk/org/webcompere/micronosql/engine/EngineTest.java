@@ -33,7 +33,7 @@ public class EngineTest {
 	}
 	
 	@Test
-	public void findsARecordAfterStoringItAndCanModifyTransientCopyWithoutPenalty() {
+	public void findsARecordAfterStoringItAndCanModifyTransientCopyWithoutAffectingOriginal() {
 		ExampleDocument original = new ExampleDocument("Key", "Value");
 		engine.store(original);
 	
@@ -44,4 +44,26 @@ public class EngineTest {
 		
 		assertThat(original.getValue(), is("Value"));
 	}
+	
+	@Test
+	public void canDeleteWhenNothingIsThere() {
+		engine.delete("something", ExampleDocument.class);
+		
+		// no exception expected, nothing to assert - proving that the api doesn't mind
+	}
+	
+	@Test
+	public void canDeleteSomethingThatIsThere() {
+		ExampleDocument original = new ExampleDocument("Key", "Value");
+		engine.store(original);
+		
+		// should be there now
+		assertNotNull(engine.find("Key", ExampleDocument.class));
+		
+		engine.delete("Key", ExampleDocument.class);
+		
+		// should not be there anymore
+		assertNull(engine.find("Key", ExampleDocument.class));
+	}
+	
 }

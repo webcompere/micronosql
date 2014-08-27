@@ -1,5 +1,6 @@
 package uk.org.webcompere.micronosql.engine;
 
+
 public interface Engine {
 
 	/**
@@ -16,5 +17,12 @@ public interface Engine {
 	 * @param object to store
 	 */
 	<T> void store(T object);
+
+	/**
+	 * Delete an item from the datasource
+	 * @param key key of item to delete
+	 * @param type type of item
+	 */
+	<T> void delete(Object key, Class<T> type);
 
 }
