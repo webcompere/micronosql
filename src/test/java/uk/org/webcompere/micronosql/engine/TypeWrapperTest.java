@@ -21,4 +21,10 @@ public class TypeWrapperTest {
 		OtherExample example = new OtherExample();
 		wrapper.getKey(example);
 	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void cantReadKeyIfNoKey() {
+		TypeWrapper wrapper = new TypeWrapper(OtherExample.class);
+		wrapper.getKey(new OtherExample());
+	}
 }

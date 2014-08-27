@@ -1,5 +1,7 @@
 package uk.org.webcompere.micronosql.storage;
 
+import java.util.Set;
+
 public interface StorageManager {
 
 
@@ -18,6 +20,13 @@ public interface StorageManager {
 	 * @return item
 	 */
 	<T> T find(String key, Class<T> type);
+
+	/**
+	 * Find all keys for all objects in the data store
+	 * @param type type of object
+	 * @return all known keys - always returns a set
+	 */
+	<T> Set<String> findAllKeys(Class<T> type);
 	
 	/**
 	 * Delete the item if it exists
@@ -25,4 +34,5 @@ public interface StorageManager {
 	 * @param type type of the item
 	 */
 	<T> void delete(String key, Class<T> type);
+	
 }

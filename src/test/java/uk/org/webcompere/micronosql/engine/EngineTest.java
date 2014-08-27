@@ -3,6 +3,9 @@ package uk.org.webcompere.micronosql.engine;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
+import java.util.List;
+import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -64,6 +67,37 @@ public class EngineTest {
 		
 		// should not be there anymore
 		assertNull(engine.find("Key", ExampleDocument.class));
+	}
+	
+	@Test
+	public void listsAllItemKeys() {
+		engine.store(new ExampleDocument("Key1", "Value1"));
+		engine.store(new ExampleDocument("Key2", "Value2"));
+		
+		Set<String> keys = engine.findAllKeys(ExampleDocument.class);
+		
+		assertThat(keys.size(), is(2));
+		assertTrue(keys.contains("Key1"));
+		assertTrue(keys.contains("Key2"));
+	}
+	
+	@Test
+	public void listAllItemsAsItems() {
+		ExampleDocument ed1 = new ExampleDocument("Key1", "Value1");
+		ExampleDocument ed2 = new ExampleDocument("Key2", "Value2");
+		engine.store(ed1);
+		engine.store(ed2);
+		
+		List<ExampleDocument> items = engine.findAll(ExampleDocument.class);
+		
+		assertThat(items.size(), is(2));
+		ExampleDocument item1 = items.get(0);
+		ExampleDocument item2 = items.get(1);
+		
+		// should have extracted both items
+		assertTrue(item1.equals(ed1) || item1.equals(ed2));
+		assertTrue(item2.equals(ed1) || item2.equals(ed2));
+		assertFalse(item1.equals(item2));
 	}
 	
 }

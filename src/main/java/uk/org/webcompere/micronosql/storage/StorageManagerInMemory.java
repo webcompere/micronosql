@@ -1,7 +1,9 @@
 package uk.org.webcompere.micronosql.storage;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class StorageManagerInMemory extends StorageManagerBase implements StorageManager {
 	private Map<Class<?>, Map<String, String>> storage = new HashMap<>();
@@ -43,6 +45,15 @@ public class StorageManagerInMemory extends StorageManagerBase implements Storag
 		return convertToObject(type, payload);
 	}
 
+
+	@Override
+	public <T> Set<String> findAllKeys(Class<T> type) {
+		Set<String> keys = new HashSet<String>();
+		Map<String, String> table = getTable(type);
+		readKeysFromTable(table, keys);
+		return keys;
+	}
+	
 	@Override
 	public <T> void delete(String key, Class<T> type) {
 		Map<String, String> table = getTable(type);
@@ -72,4 +83,11 @@ public class StorageManagerInMemory extends StorageManagerBase implements Storag
 			return table.get(key);
 		}
 	}
+	
+	private void readKeysFromTable(Map<String, String> table, Set<String> keys) {
+		synchronized(table) {
+			keys.addAll(table.keySet());
+		}
+	}
+
 }

@@ -1,7 +1,9 @@
 package uk.org.webcompere.micronosql.engine;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import uk.org.webcompere.micronosql.storage.StorageManager;
 
@@ -22,9 +24,11 @@ public class EngineImpl implements Engine {
 	}
 
 	@Override
-	public <T> void store(T object) {
+	public <T> String store(T object) {
 		TypeWrapper wrapper = getTypeWrapper(object.getClass());
-		storageManager.store(wrapper.getKey(object), object);
+		String key = wrapper.getKey(object);
+		storageManager.store(key, object);
+		return key;
 	}
 	
 	private synchronized TypeWrapper getTypeWrapper(Class<?> clazz) {
@@ -41,6 +45,16 @@ public class EngineImpl implements Engine {
 		String keyAsString = key.toString();
 		
 		storageManager.delete(keyAsString, type);
+	}
+
+	@Override
+	public <T> Set<String> findAllKeys(Class<T> type) {
+		return storageManager.findAllKeys(type);
+	}
+
+	@Override
+	public <T> List<T> findAll(Class<T> type) {
+		return new OnDemandList<T>(type, this, findAllKeys(type));
 	}
 
 }
