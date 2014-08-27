@@ -9,20 +9,21 @@ import java.util.ListIterator;
 import java.util.Set;
 
 /**
- * Represents a set of data taken from the micronosql database - warning modifying this list will commit to the db
+ * Represents a set of data taken from the micronosql database
+ * warning modifying this list will commit to the repository
  */
-public class OnDemandList<T> implements List<T> {
+public class OnDemandListAdapter<T> implements List<T> {
 	private Class<T> clazz;
 	private Engine engine;
 	private List<String> keys = new ArrayList<String>();
 	
-	public OnDemandList(Class<T> clazz, Engine engine, Set<String> keys) {
+	public OnDemandListAdapter(Class<T> clazz, Engine engine, Set<String> keys) {
 		this.clazz = clazz;
 		this.engine = engine;
 		this.keys.addAll(keys);
 	}
 	
-	public OnDemandList(Class<T> clazz, Engine engine, List<String> keys) {
+	public OnDemandListAdapter(Class<T> clazz, Engine engine, List<String> keys) {
 		this.clazz = clazz;
 		this.engine = engine;
 		this.keys = keys;
@@ -171,8 +172,9 @@ public class OnDemandList<T> implements List<T> {
 	}
 	@Override
 	public T set(int index, T element) {
-		// TODO Auto-generated method stub
-		return null;
+		remove(index);
+		add(index, element);
+		return element;
 	}
 	@Override
 	public int size() {
@@ -180,7 +182,7 @@ public class OnDemandList<T> implements List<T> {
 	}
 	@Override
 	public List<T> subList(int fromIndex, int toIndex) {
-		return new OnDemandList<T>(clazz, engine, keys.subList(fromIndex, toIndex));
+		return new OnDemandListAdapter<T>(clazz, engine, keys.subList(fromIndex, toIndex));
 	}
 	@Override
 	public Object[] toArray() {

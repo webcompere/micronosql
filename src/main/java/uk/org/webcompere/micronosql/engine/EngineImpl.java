@@ -78,7 +78,7 @@ public class EngineImpl implements Engine {
 
 	@Override
 	public <T> List<T> findAll(Class<T> type) {
-		return new OnDemandList<T>(type, this, findAllKeys(type));
+		return new OnDemandListAdapter<T>(type, this, findAllKeys(type));
 	}
 	
 	protected <T> T convertToObject(Class<T> type, String payload) {
