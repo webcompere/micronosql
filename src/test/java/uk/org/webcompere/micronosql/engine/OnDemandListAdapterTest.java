@@ -16,7 +16,7 @@ public class OnDemandListAdapterTest {
 	private ExampleDocument doc1;
 	private ExampleDocument doc2;
 	private ExampleDocument doc3;
-	private List<ExampleDocument> list;
+	private ListWithKeys<ExampleDocument> list;
 	
 	@Before
 	public void before() {
@@ -173,6 +173,12 @@ public class OnDemandListAdapterTest {
 		assertNotNull(engine.find("New", ExampleDocument.class));
 	}
 
+	@Test
+	public void keysMatch() {
+		for(int i=0; i<list.size(); i++) {
+			assertThat(list.getKey(i), is(list.get(i).getKey()));
+		}
+	}
 	
 	private void checkSameAnyOrder(List<ExampleDocument> actual, ExampleDocument ... expected) {
 		assertThat(actual.size(), is(expected.length));

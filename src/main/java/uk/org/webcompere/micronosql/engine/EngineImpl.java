@@ -1,6 +1,9 @@
 package uk.org.webcompere.micronosql.engine;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,8 +13,14 @@ import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import uk.org.webcompere.micronosql.mapreducesort.Predicate;
 import uk.org.webcompere.micronosql.storage.StorageManager;
 
+/**
+ * Implementation of data repository using a storage manager to
+ * keep all the records in a persistence layer, probably filesystem
+ * but could be anything.
+ */
 public class EngineImpl implements Engine {
 	private StorageManager storageManager;
 	
@@ -76,9 +85,39 @@ public class EngineImpl implements Engine {
 		return storageManager.findAllKeys(type);
 	}
 
+
 	@Override
-	public <T> List<T> findAll(Class<T> type) {
+	public <T> List<String> findAllKeys(Class<T> type, Comparator<String> sortOrder) {
+		List<String> allKeys = new ArrayList<String>();
+		allKeys.addAll(findAllKeys(type));
+		Collections.sort(allKeys, sortOrder);;
+		return allKeys;
+	}
+
+	
+	@Override
+	public <T> ListWithKeys<T> findAll(Class<T> type) {
 		return new OnDemandListAdapter<T>(type, this, findAllKeys(type));
+	}
+	
+	@Override
+	public <T> ListWithKeys<T> findAll(Class<T> type, Comparator<String> keySortOrder) {
+		return new OnDemandListAdapter<T>(type, this, findAllKeys(type, keySortOrder));
+	}
+	
+
+	@Override
+	public <T> ListWithKeys<T> find(Class<T> type, Predicate<T> predicate) {
+		List<String> allMatchingKeys = new ArrayList<String>();
+		for(String key:findAllKeys(type)) {
+			if (predicate.includes(find(key, type))) {
+				allMatchingKeys.add(key);
+			}
+		}
+		
+		ListWithKeys<T> result = new OnDemandListAdapter<T>(type, this, allMatchingKeys);
+		
+		return result;
 	}
 	
 	protected <T> T convertToObject(Class<T> type, String payload) {
@@ -94,5 +133,7 @@ public class EngineImpl implements Engine {
 		String document = mapper.writeValueAsString(object);
 		return document;
 	}
+
+
 
 }

@@ -12,7 +12,7 @@ import java.util.Set;
  * Represents a set of data taken from the micronosql database
  * warning modifying this list will commit to the repository
  */
-public class OnDemandListAdapter<T> implements List<T> {
+public class OnDemandListAdapter<T> implements ListWithKeys<T> {
 	private Class<T> clazz;
 	private Engine engine;
 	private List<String> keys = new ArrayList<String>();
@@ -198,5 +198,10 @@ public class OnDemandListAdapter<T> implements List<T> {
 			array[i]=(T)get(i);
 		}
 		return array;
+	}
+
+	@Override
+	public String getKey(int index) {
+		return keys.get(index);
 	}
 }
