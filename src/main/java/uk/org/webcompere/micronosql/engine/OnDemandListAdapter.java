@@ -31,7 +31,7 @@ public class OnDemandListAdapter<T> implements List<T> {
 	
 	@Override
 	public boolean add(T e) {
-		engine.store(e);
+		keys.add(engine.store(e));
 		return true;
 	}
 	@Override
@@ -40,10 +40,7 @@ public class OnDemandListAdapter<T> implements List<T> {
 	}
 	@Override
 	public boolean addAll(Collection<? extends T> c) {
-		for(T t:c) {
-			add(t);
-		}
-		return true;
+		return addAll(size(), c);
 	}
 	@Override
 	public boolean addAll(int index, Collection<? extends T> c) {
@@ -57,6 +54,7 @@ public class OnDemandListAdapter<T> implements List<T> {
 		for(String key:keys) {
 			engine.delete(key, clazz);
 		}
+		keys.clear();
 	}
 	@Override
 	public boolean contains(Object o) {
