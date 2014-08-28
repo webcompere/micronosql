@@ -3,6 +3,8 @@ package uk.org.webcompere.micronosql.engine;
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -14,7 +16,9 @@ import uk.org.webcompere.micronosql.mapreducesort.Predicate;
 import uk.org.webcompere.micronosql.mapreducesort.StringAscending;
 import uk.org.webcompere.micronosql.mapreducesort.StringDescending;
 import uk.org.webcompere.micronosql.pojo.ExampleDocument;
+import uk.org.webcompere.micronosql.storage.StorageManagerFileSystem;
 import uk.org.webcompere.micronosql.storage.StorageManagerInMemory;
+import uk.org.webcompere.micronosql.util.FileUtil;
 
 public class EngineTest {
 	private Engine engine;
@@ -140,6 +144,10 @@ public class EngineTest {
 	
 	@Test
 	public void findByCriteria() {
+		doFindByCriteria(engine);
+	}
+
+	private static void doFindByCriteria(Engine engine) {
 		ExampleDocument ed1 = new ExampleDocument("Key1", "Value1");
 		ExampleDocument ed2 = new ExampleDocument("Key2", "Value2");
 		ExampleDocument ed3 = new ExampleDocument("Key3", "Value3");	
@@ -162,6 +170,17 @@ public class EngineTest {
 
 		// check the results
 		assertThat(results, contains(ed2, ed4));
+	}
+	
+	@Test
+	public void integrationTestAgainstFileSystem() throws IOException {
+		try {
+			Engine fileBased = new EngineImpl(new StorageManagerFileSystem("tempTestDbFileSystem/"));
+			
+			doFindByCriteria(fileBased);
+		} finally {
+			FileUtil.deepDelete(new File("tempTestDbFileSystem/"));
+		}
 	}
 	
 }
