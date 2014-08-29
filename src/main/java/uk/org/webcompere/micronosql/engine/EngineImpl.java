@@ -13,6 +13,9 @@ import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import uk.org.webcompere.micronosql.mapreducesort.MappedItem;
+import uk.org.webcompere.micronosql.mapreducesort.MappedItemComparator;
+import uk.org.webcompere.micronosql.mapreducesort.Mapping;
 import uk.org.webcompere.micronosql.mapreducesort.Predicate;
 import uk.org.webcompere.micronosql.storage.StorageManager;
 
@@ -108,16 +111,47 @@ public class EngineImpl implements Engine {
 
 	@Override
 	public <T> ListWithKeys<T> find(Class<T> type, Predicate<T> predicate) {
+		return find(type, predicate, null, null);
+	}
+	
+
+	@Override
+	public <T, M> ListWithKeys<T> find(Class<T> type, Predicate<T> predicate,
+			Mapping<T, M> mapping, Comparator<M> sortOrder) {
+		
 		List<String> allMatchingKeys = new ArrayList<String>();
+		List<MappedItem<M>> mappedItems = new ArrayList<>();
+		
 		for(String key:findAllKeys(type)) {
-			if (predicate.includes(find(key, type))) {
-				allMatchingKeys.add(key);
+			T item = find(key, type);
+			if (predicate.includes(item)) {
+				if (mapping!=null) {
+					// add a mapped item when we have a mapping
+					mappedItems.add(new MappedItem<M>(key, mapping.map(item)));
+				} else {
+					// add to the all keys when there's no mapping
+					allMatchingKeys.add(key);
+				}
 			}
 		}
 		
-		ListWithKeys<T> result = new OnDemandListAdapter<T>(type, this, allMatchingKeys);
+		if (mapping!=null) {
+			sortAndConvert(sortOrder, allMatchingKeys, mappedItems);
+		}
+	
 		
-		return result;
+		return new OnDemandListAdapter<T>(type, this, allMatchingKeys);
+
+	}
+
+	private <M> void sortAndConvert(Comparator<M> sortOrder, List<String> allMatchingKeys, List<MappedItem<M>> mappedItems) {
+		if (sortOrder!=null) {
+			Collections.sort(mappedItems, new MappedItemComparator<M>(sortOrder));
+		}
+		
+		for(MappedItem<M> item:mappedItems) {
+			allMatchingKeys.add(item.getKey());
+		}
 	}
 	
 	protected <T> T convertToObject(Class<T> type, String payload) {
@@ -133,6 +167,7 @@ public class EngineImpl implements Engine {
 		String document = mapper.writeValueAsString(object);
 		return document;
 	}
+
 
 
 

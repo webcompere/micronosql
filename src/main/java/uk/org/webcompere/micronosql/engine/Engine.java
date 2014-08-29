@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import uk.org.webcompere.micronosql.mapreducesort.Mapping;
 import uk.org.webcompere.micronosql.mapreducesort.Predicate;
 import uk.org.webcompere.micronosql.mapreducesort.StringAscending;
 import uk.org.webcompere.micronosql.pojo.ExampleDocument;
@@ -65,11 +66,22 @@ public interface Engine {
 	<T> ListWithKeys<T> findAll(Class<T> type, Comparator<String> keySortOrder);
 
 	/**
-	 * Find all items in the data source which match the predicate and sort by the sort order
+	 * Find all items in the data source which match the predicate
 	 * @param type type of data
 	 * @param predicate whether to include the item in the search or not
 	 * @return a list of the items, which acts as a facade over the data source - note adding items
 	 * to this list will break its role as a filtered list
 	 */
 	<T> ListWithKeys<T> find(Class<T> type, Predicate<T> predicate);
+	
+	/**
+	 * Find all items in the data source which match the predicate and sort by the mapped field with sort order
+	 * @param type type of data
+	 * @param predicate whether to include the item in the search or not
+	 * @param mapping defines how to convert from the contents of the item into a sortable
+	 * @param sortOrder runs over the sortable mapped items
+	 * @return a list of the items, which acts as a facade over the data source - note adding items
+	 * to this list will break its role as a filtered list
+	 */
+	<T,M> ListWithKeys<T> find(Class<T> type, Predicate<T> predicate, Mapping<T,M> mapping, Comparator<M> sortOrder);
 }

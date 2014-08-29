@@ -12,10 +12,13 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.org.webcompere.micronosql.mapreducesort.IntDescending;
+import uk.org.webcompere.micronosql.mapreducesort.Mapping;
 import uk.org.webcompere.micronosql.mapreducesort.Predicate;
 import uk.org.webcompere.micronosql.mapreducesort.StringAscending;
 import uk.org.webcompere.micronosql.mapreducesort.StringDescending;
 import uk.org.webcompere.micronosql.pojo.ExampleDocument;
+import uk.org.webcompere.micronosql.pojo.IntegerKeyedDocument;
 import uk.org.webcompere.micronosql.storage.StorageManagerFileSystem;
 import uk.org.webcompere.micronosql.storage.StorageManagerInMemory;
 import uk.org.webcompere.micronosql.util.FileUtil;
@@ -181,6 +184,52 @@ public class EngineTest {
 		} finally {
 			FileUtil.deepDelete(new File("tempTestDbFileSystem/"));
 		}
+	}
+	
+	@Test
+	public void canStoreAndRetrieveItemsWithNonStringKeys() {
+		engine.store(new IntegerKeyedDocument(1,"one"));
+		engine.store(new IntegerKeyedDocument(2,"two"));
+		engine.store(new IntegerKeyedDocument(3,"three"));
+		
+		IntegerKeyedDocument doc = engine.find(2, IntegerKeyedDocument.class);
+		assertThat(doc.getName(), is("two"));
+	}
+	
+	@Test
+	public void searchAndCustomSort() {
+		engine.store(new IntegerKeyedDocument(1,"one"));
+		engine.store(new IntegerKeyedDocument(10,"ten"));
+		engine.store(new IntegerKeyedDocument(100,"one hundred"));
+		engine.store(new IntegerKeyedDocument(101,"one hundred and one"));
+		
+		ListWithKeys<IntegerKeyedDocument> results = engine.find(IntegerKeyedDocument.class, greaterThan9(), getIntegerKeyedDocumentKey(), new IntDescending());
+		
+		assertThat(results.getKey(0), is("101"));
+		assertThat(results.getKey(1), is("100"));
+		assertThat(results.getKey(2), is("10"));
+	}
+
+	private Mapping<IntegerKeyedDocument, Integer> getIntegerKeyedDocumentKey() {
+		return new Mapping<IntegerKeyedDocument, Integer>() {
+
+			@Override
+			public Integer map(IntegerKeyedDocument item) {
+				return item.getId();
+			}
+			
+		};
+	}
+
+	private Predicate<IntegerKeyedDocument> greaterThan9() {
+		return new Predicate<IntegerKeyedDocument>() {
+
+			@Override
+			public boolean includes(IntegerKeyedDocument item) {
+				return item.getId() > 9;
+			}
+			
+		};
 	}
 	
 }
