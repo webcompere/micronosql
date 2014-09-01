@@ -56,11 +56,26 @@ public class EngineImpl implements Engine {
 			throw new IllegalArgumentException("Could not store object", e);
 		}
 	}
+	
+
+	@Override
+	public <T> String storeNew(T object) throws LockingException {
+		if (exists(object)) {
+			throw new LockingException("Duplicate object cannot be stored as new");
+		}
+		return store(object);
+	}
 
 	private <T> String keyFromObject(T object, Class<?> type) {
 		TypeWrapper wrapper = getTypeWrapper(type);
 		String key = wrapper.getKey(object);
 		return key;
+	}
+	
+	private <T> boolean exists(T object) {
+		Class<?> type = object.getClass();
+		String key = keyFromObject(object, type);
+		return find(key, type) != null;
 	}
 	
 	private synchronized TypeWrapper getTypeWrapper(Class<?> clazz) {
@@ -166,5 +181,6 @@ public class EngineImpl implements Engine {
 			allMatchingKeys.add(item.getKey());
 		}
 	}
+
 
 }

@@ -209,7 +209,20 @@ public class EngineTest {
 		assertThat(results.getKey(1), is("100"));
 		assertThat(results.getKey(2), is("10"));
 	}
-
+	
+	@Test
+	public void canStoreNewOk() throws Exception {
+		engine.storeNew(new ExampleDocument("key", "value"));
+		
+		// should reach here ok
+	}
+	
+	@Test(expected = LockingException.class)
+	public void cannotStoreNewIfAlreadyExists() throws Exception {
+		engine.storeNew(new ExampleDocument("key", "value"));
+		engine.storeNew(new ExampleDocument("key", "value"));
+	}
+	
 	private Mapping<IntegerKeyedDocument, Integer> getIntegerKeyedDocumentKey() {
 		return new Mapping<IntegerKeyedDocument, Integer>() {
 

@@ -28,6 +28,14 @@ public interface Engine {
 	<T> String store(T object);
 
 	/**
+	 * Store an object in the storage
+	 * must be new - will throw exception if the object
+	 * already exists
+	 * @param object to store
+	 */
+	<T> String storeNew(T object) throws LockingException;	
+	
+	/**
 	 * Delete an item from the datasource
 	 * @param key key of item to delete
 	 * @param type type of item
