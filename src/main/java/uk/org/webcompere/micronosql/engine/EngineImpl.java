@@ -9,10 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-
 import uk.org.webcompere.micronosql.mapreducesort.MappedItem;
 import uk.org.webcompere.micronosql.mapreducesort.MappedItemComparator;
 import uk.org.webcompere.micronosql.mapreducesort.Mapping;
@@ -26,8 +22,8 @@ import uk.org.webcompere.micronosql.storage.StorageManager;
  */
 public class EngineImpl implements Engine {
 	private StorageManager storageManager;
-	
-	protected final ObjectMapper mapper = new ObjectMapper();
+	private Codec codec = new JSONCodec();
+
 
 	private Map<Class<?>, TypeWrapper> typeWrappers = new HashMap<>();
 	
@@ -43,7 +39,7 @@ public class EngineImpl implements Engine {
 		if (objectAsString == null) {
 			return null;
 		}
-		return convertToObject(type, objectAsString);
+		return codec.decode(objectAsString, type);
 	}
 
 	@Override
@@ -52,9 +48,9 @@ public class EngineImpl implements Engine {
 			Class<?> type = object.getClass();
 			
 			String key = keyFromObject(object, type);
-			String payload = convertToString(object);
-			
+			String payload = codec.encode(object);
 			storageManager.store(key, payload, type);
+			
 			return key;
 		} catch (Exception e) {
 			throw new IllegalArgumentException("Could not store object", e);
@@ -135,6 +131,7 @@ public class EngineImpl implements Engine {
 			}
 		}
 		
+		// when there's a mapping put the keys into the target list based on the mapped items
 		if (mapping!=null) {
 			sortAndConvert(sortOrder, allMatchingKeys, mappedItems);
 		}
@@ -142,6 +139,22 @@ public class EngineImpl implements Engine {
 		
 		return new OnDemandListAdapter<T>(type, this, allMatchingKeys);
 
+	}
+	
+	public StorageManager getStorageManager() {
+		return storageManager;
+	}
+
+	public void setStorageManager(StorageManager storageManager) {
+		this.storageManager = storageManager;
+	}
+
+	public Codec getCodec() {
+		return codec;
+	}
+
+	public void setCodec(Codec codec) {
+		this.codec = codec;
 	}
 
 	private <M> void sortAndConvert(Comparator<M> sortOrder, List<String> allMatchingKeys, List<MappedItem<M>> mappedItems) {
@@ -153,22 +166,5 @@ public class EngineImpl implements Engine {
 			allMatchingKeys.add(item.getKey());
 		}
 	}
-	
-	protected <T> T convertToObject(Class<T> type, String payload) {
-		try {
-			return mapper.reader(type).readValue(payload);
-		} catch (Exception e) {
-			throw new IllegalArgumentException("Unable to read payload for type "+ type.getCanonicalName());
-		}
-	}
-	
-	protected <T> String convertToString(T object) throws IOException,
-			JsonGenerationException, JsonMappingException {
-		String document = mapper.writeValueAsString(object);
-		return document;
-	}
-
-
-
 
 }
