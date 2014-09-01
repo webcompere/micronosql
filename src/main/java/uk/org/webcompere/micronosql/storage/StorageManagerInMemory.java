@@ -5,14 +5,16 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import uk.org.webcompere.micronosql.codec.Codec;
+
 public class StorageManagerInMemory implements StorageManager {
 	private Map<Class<?>, Map<String, String>> storage = new HashMap<>();
 
 	@Override
-	public <T> void store(String key, String payload, Class<T> type) {
+	public <T> void store(String key, ItemTransfer<T> payload, Class<T> type) {
 		Map<String, String> table = getTable(type);
 		try {
-			writeToTable(table, key, payload);
+			writeToTable(table, key, payload.encodeToString());
 		} catch (Exception e) {
 			throw new IllegalArgumentException("Cannot store " + key, e);
 		}
@@ -31,9 +33,9 @@ public class StorageManagerInMemory implements StorageManager {
 
 
 	@Override
-	public <T> String find(String key, Class<T> type) {
+	public <T> ItemTransfer<T> find(String key, Class<T> type, Codec codec) {
 		Map<String, String> table = getTable(type);
-		return readFromTable(key, table);
+		return ItemTransfer.fromString(type, codec, readFromTable(key, table));
 	}
 
 

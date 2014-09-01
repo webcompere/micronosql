@@ -1,4 +1,4 @@
-package uk.org.webcompere.micronosql.engine;
+package uk.org.webcompere.micronosql.codec;
 
 /**
  * Convert an object to and from its representation

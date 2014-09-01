@@ -1,4 +1,4 @@
-package uk.org.webcompere.micronosql.engine;
+package uk.org.webcompere.micronosql.codec;
 
 import org.codehaus.jackson.map.ObjectMapper;
 

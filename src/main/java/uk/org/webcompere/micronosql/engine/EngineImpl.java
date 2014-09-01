@@ -9,10 +9,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import uk.org.webcompere.micronosql.codec.Codec;
+import uk.org.webcompere.micronosql.codec.JSONCodec;
 import uk.org.webcompere.micronosql.mapreducesort.MappedItem;
 import uk.org.webcompere.micronosql.mapreducesort.MappedItemComparator;
 import uk.org.webcompere.micronosql.mapreducesort.Mapping;
 import uk.org.webcompere.micronosql.mapreducesort.Predicate;
+import uk.org.webcompere.micronosql.storage.ItemTransfer;
 import uk.org.webcompere.micronosql.storage.StorageManager;
 
 /**
@@ -35,21 +38,18 @@ public class EngineImpl implements Engine {
 	public <T> T find(Object key, Class<T> type) {
 		String keyAsString = key.toString();
 		
-		String objectAsString = storageManager.find(keyAsString, type);
-		if (objectAsString == null) {
-			return null;
-		}
-		return codec.decode(objectAsString, type);
+		return storageManager.find(keyAsString, type, codec).getItem();
 	}
 
 	@Override
 	public <T> String store(T object) {
 		try {
-			Class<?> type = object.getClass();
+			// this gets around a linguistic problem - the class MUST be of type T
+			@SuppressWarnings("unchecked")
+			Class<T> type = (Class<T>)object.getClass();
 			
 			String key = keyFromObject(object, type);
-			String payload = codec.encode(object);
-			storageManager.store(key, payload, type);
+			storageManager.store(key, new ItemTransfer<T>(codec, object), type);
 			
 			return key;
 		} catch (Exception e) {

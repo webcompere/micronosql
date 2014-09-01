@@ -2,6 +2,8 @@ package uk.org.webcompere.micronosql.storage;
 
 import java.util.Set;
 
+import uk.org.webcompere.micronosql.codec.Codec;
+
 public interface StorageManager {
 	/**
 	 * Store the item in the repository
@@ -9,16 +11,17 @@ public interface StorageManager {
 	 * @param payload representation of the item
 	 * @param type type of item
 	 */
-	<T> void store(String key, String payload, Class<T> type);
+	<T> void store(String key, ItemTransfer<T> payload, Class<T> type);
 
 	
 	/**
 	 * Find the item from the storage
 	 * @param key key of the items
 	 * @param type type to look up
-	 * @return item in encoded representation
+	 * @param codec to use to transfer the item
+	 * @return item wrapped in item transfer
 	 */
-	<T> String find(String key, Class<T> type);
+	<T> ItemTransfer<T> find(String key, Class<T> type, Codec codec);
 
 	/**
 	 * Find all keys for all objects in the data store

@@ -6,6 +6,8 @@ import java.net.URLEncoder;
 import java.util.HashSet;
 import java.util.Set;
 
+import uk.org.webcompere.micronosql.codec.Codec;
+
 /**
  * Implementation of the storage manager against the filesystem
  */
@@ -28,10 +30,10 @@ public class StorageManagerFileSystem implements StorageManager {
 	
 	
 	@Override
-	public <T> void store(String key, String payload, Class<T> type) {
+	public <T> void store(String key, ItemTransfer<T> payload, Class<T> type) {
 		String filename = fileNameFrom(key, type);
 		try {
-			fileSystem.writeFile(filename, payload);
+			fileSystem.writeFile(filename, payload.encodeToString());
 		} catch (IOException e) {
 			// ignore
 		}
@@ -66,9 +68,11 @@ public class StorageManagerFileSystem implements StorageManager {
 
 
 	@Override
-	public <T> String find(String key, Class<T> type) {
-		return fileSystem.read(fileNameFrom(key, type));
+	public <T> ItemTransfer<T> find(String key, Class<T> type, Codec codec) {
+		String content = fileSystem.read(fileNameFrom(key, type));
+		return ItemTransfer.fromString(type, codec, content);
 	}
+
 
 	@Override
 	public <T> Set<String> findAllKeys(Class<T> type) {

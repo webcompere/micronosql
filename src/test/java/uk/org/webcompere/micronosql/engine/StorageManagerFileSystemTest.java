@@ -11,8 +11,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
+import uk.org.webcompere.micronosql.codec.JSONCodec;
 import uk.org.webcompere.micronosql.pojo.ExampleDocument;
 import uk.org.webcompere.micronosql.storage.FileSystem;
+import uk.org.webcompere.micronosql.storage.ItemTransfer;
 import uk.org.webcompere.micronosql.storage.StorageManagerFileSystem;
 import static org.mockito.Mockito.*;
 
@@ -24,6 +26,8 @@ public class StorageManagerFileSystemTest {
 	private StorageManagerFileSystem storageManager;
 	private String rootDirectory = "/root/dir/";
 	private String examplePojoDirectoryName = "uk.org.webcompere.micronosql.pojo.ExampleDocument";
+	private String someDataAsJson = "{\"key\":\"\",\"value\":\"someData\"}";
+	private String someDataAsString = "someData";
 	
 	@Before
 	public void before() {
@@ -33,17 +37,17 @@ public class StorageManagerFileSystemTest {
 	
 	@Test
 	public void store() throws IOException {
-		storageManager.store("somekey", "somedata", ExampleDocument.class);
+		storageManager.store("somekey", mockTransfer(someDataAsString), ExampleDocument.class);
 		
-		verify(fileSystem, times(1)).writeFile(rootDirectory + examplePojoDirectoryName + "/somekey", "somedata");
+		verify(fileSystem, times(1)).writeFile(rootDirectory + examplePojoDirectoryName + "/somekey", someDataAsJson);
 	}
 	
 	@Test
 	public void filePathUsedIsTolerantOfNoTrailingSlashInRootDirectory() throws IOException {
 		storageManager = new StorageManagerFileSystem("someroot", fileSystem);
-		storageManager.store("somekey", "somedata", ExampleDocument.class);
+		storageManager.store("somekey", mockTransfer(someDataAsString), ExampleDocument.class);
 		
-		verify(fileSystem, times(1)).writeFile("someroot/" + examplePojoDirectoryName + "/somekey", "somedata");
+		verify(fileSystem, times(1)).writeFile("someroot/" + examplePojoDirectoryName + "/somekey", someDataAsJson);
 	}
 	
 	@Test
@@ -59,11 +63,11 @@ public class StorageManagerFileSystemTest {
 	 */
 	private void checkKeyConversions(String ... values) throws IOException {
 		for(int i=0; i<values.length; i+=2) {
-			storageManager.store(values[i], "somedata", ExampleDocument.class);
+			storageManager.store(values[i], mockTransfer(someDataAsString), ExampleDocument.class);
 		}
 
 		for(int i=1; i<values.length; i+=2) {
-			verify(fileSystem, times(1)).writeFile(rootDirectory + examplePojoDirectoryName + "/" + values[i], "somedata");
+			verify(fileSystem, times(1)).writeFile(rootDirectory + examplePojoDirectoryName + "/" + values[i], someDataAsJson);
 		}
 
 	}
@@ -79,14 +83,15 @@ public class StorageManagerFileSystemTest {
 	public void findAbsentKey() {
 		when(fileSystem.read(rootDirectory + examplePojoDirectoryName + "/mykey")).thenReturn(null);
 		
-		assertNull(storageManager.find("mykey", ExampleDocument.class));
+		assertNull(storageManager.find("mykey", ExampleDocument.class, new JSONCodec()).getItem());
 	}
 	
 	@Test
 	public void findExistingKey() {
-		when(fileSystem.read(rootDirectory + examplePojoDirectoryName + "/mykey")).thenReturn("myJson");
+		ExampleDocument myItem = new ExampleDocument("my", "item");
+		when(fileSystem.read(rootDirectory + examplePojoDirectoryName + "/mykey")).thenReturn(new JSONCodec().encode(myItem));
 		
-		assertThat(storageManager.find("mykey", ExampleDocument.class), is("myJson"));
+		assertThat(storageManager.find("mykey", ExampleDocument.class, new JSONCodec()).getItem(), is(myItem));
 	}
 	
 	@Test
@@ -133,5 +138,9 @@ public class StorageManagerFileSystemTest {
 		for(String key:keyNames) {
 			assertTrue("Conversion of " + key, keys.contains(key));
 		}
+	}
+	
+	private ItemTransfer<ExampleDocument> mockTransfer(String data) {
+		return new ItemTransfer<ExampleDocument>(new JSONCodec(), new ExampleDocument("", data));
 	}
 }
