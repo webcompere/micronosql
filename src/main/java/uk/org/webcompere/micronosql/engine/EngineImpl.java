@@ -49,12 +49,36 @@ public class EngineImpl implements Engine {
 			Class<T> type = (Class<T>)object.getClass();
 			
 			String key = keyFromObject(object, type);
+			
+			if (key == null) {
+				return generateKeyAndStore(object);
+			}
+			
 			storageManager.store(key, new ItemTransfer<T>(codec, object), type);
 			
 			return key;
 		} catch (Exception e) {
 			throw new IllegalArgumentException("Could not store object", e);
 		}
+	}
+	
+	private <T> String generateKeyAndStore(T object) {
+		Class<?> type = object.getClass();
+		TypeWrapper wrapper = getTypeWrapper(type);
+		
+		boolean successfullyStored = false;
+		do {
+			try {
+				wrapper.writeNewKey(object);
+				return storeNew(object);
+			} catch (LockingException exception) {
+				// this means we've had a key clash, just try again
+			}
+			
+		} while (!successfullyStored);
+		
+		// note - this is unreachable - we return 
+		return null;
 	}
 	
 

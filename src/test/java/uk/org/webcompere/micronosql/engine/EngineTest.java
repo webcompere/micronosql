@@ -18,6 +18,7 @@ import uk.org.webcompere.micronosql.mapreducesort.Predicate;
 import uk.org.webcompere.micronosql.mapreducesort.StringAscending;
 import uk.org.webcompere.micronosql.mapreducesort.StringDescending;
 import uk.org.webcompere.micronosql.pojo.ExampleDocument;
+import uk.org.webcompere.micronosql.pojo.ExampleDocumentWithKeyGeneration;
 import uk.org.webcompere.micronosql.pojo.IntegerKeyedDocument;
 import uk.org.webcompere.micronosql.storage.StorageManagerFileSystem;
 import uk.org.webcompere.micronosql.storage.StorageManagerInMemory;
@@ -221,6 +222,23 @@ public class EngineTest {
 	public void cannotStoreNewIfAlreadyExists() throws Exception {
 		engine.storeNew(new ExampleDocument("key", "value"));
 		engine.storeNew(new ExampleDocument("key", "value"));
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void cannotStoreNullKeyIfNoKeyGenerator() {
+		engine.store(new ExampleDocument(null, ""));
+	}
+	
+	@Test
+	public void storingWithNullKeyCausesKeyToBeGenerated() {
+		ExampleDocumentWithKeyGeneration document = new ExampleDocumentWithKeyGeneration();
+		
+		String key = engine.store(document);
+		
+		assertNotNull(key);
+		
+		// the key returned should also have been written into the document
+		assertThat(document.getKey(), is(key));
 	}
 	
 	private Mapping<IntegerKeyedDocument, Integer> getIntegerKeyedDocumentKey() {
