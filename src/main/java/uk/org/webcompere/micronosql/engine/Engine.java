@@ -7,6 +7,7 @@ import java.util.Set;
 import uk.org.webcompere.micronosql.mapreducesort.Mapping;
 import uk.org.webcompere.micronosql.mapreducesort.Predicate;
 import uk.org.webcompere.micronosql.mapreducesort.StringAscending;
+import uk.org.webcompere.micronosql.mapreducesort.Transformation;
 import uk.org.webcompere.micronosql.pojo.ExampleDocument;
 
 
@@ -92,4 +93,14 @@ public interface Engine {
 	 * to this list will break its role as a filtered list
 	 */
 	<T,M> ListWithKeys<T> find(Class<T> type, Predicate<T> predicate, Mapping<T,M> mapping, Comparator<M> sortOrder);
+	
+	/**
+	 * Go through all items in the list and perform the transformation on them returning it - this is most likely to be
+	 * used to calculate sums, or bulk extractions etc
+	 * @param type type of data
+	 * @param predicate whether to include an item in the search
+	 * @param transformation transformation function to run over the items
+	 * @return a transformation
+	 */
+	<T,R> R createTransformation(Class<T> type, Predicate<T> predicate, Transformation<T,R> transformation);
 }

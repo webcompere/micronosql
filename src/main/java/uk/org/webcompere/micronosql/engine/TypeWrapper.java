@@ -42,10 +42,11 @@ public class TypeWrapper {
 					keyWriteMethod = propertyDescriptor.getWriteMethod();
 					constructKeyGenerator(annotation);
 					
+					// we have successfully read this, so stop
+					break;
 				} catch (IntrospectionException e) {
 					// fails to introspect, so skip this one
 				}
-				break;
 			}
 		}
 	}

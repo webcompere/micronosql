@@ -12,7 +12,11 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.org.webcompere.micronosql.mapreducesort.All;
 import uk.org.webcompere.micronosql.mapreducesort.IntDescending;
+import uk.org.webcompere.micronosql.mapreducesort.IntegerMax;
+import uk.org.webcompere.micronosql.mapreducesort.IntegerMin;
+import uk.org.webcompere.micronosql.mapreducesort.IntegerSum;
 import uk.org.webcompere.micronosql.mapreducesort.Mapping;
 import uk.org.webcompere.micronosql.mapreducesort.Predicate;
 import uk.org.webcompere.micronosql.mapreducesort.StringAscending;
@@ -209,6 +213,38 @@ public class EngineTest {
 		assertThat(results.getKey(0), is("101"));
 		assertThat(results.getKey(1), is("100"));
 		assertThat(results.getKey(2), is("10"));
+	}
+	
+	@Test
+	public void findSumOfItems() {
+		engine.store(new IntegerKeyedDocument(1,"one"));
+		engine.store(new IntegerKeyedDocument(10,"ten"));
+		engine.store(new IntegerKeyedDocument(100,"one hundred"));
+		engine.store(new IntegerKeyedDocument(101,"one hundred and one"));
+		
+		Integer sum = engine.createTransformation(IntegerKeyedDocument.class, greaterThan9(), new IntegerSum<IntegerKeyedDocument>(getIntegerKeyedDocumentKey()));
+		assertThat(sum, is(211));
+	}
+	
+	@Test
+	public void findMaxAndMinOfAllItems() {
+		engine.store(new IntegerKeyedDocument(1,"one"));
+		engine.store(new IntegerKeyedDocument(10,"ten"));
+		engine.store(new IntegerKeyedDocument(999,"nine nine nine"));
+		engine.store(new IntegerKeyedDocument(100,"one hundred"));
+		engine.store(new IntegerKeyedDocument(101,"one hundred and one"));
+		
+		Integer max = engine.createTransformation(IntegerKeyedDocument.class, 
+				new All<IntegerKeyedDocument>(), 
+				new IntegerMax<IntegerKeyedDocument>(getIntegerKeyedDocumentKey()));
+		
+		assertThat(max, is(999));
+		
+		Integer min = engine.createTransformation(IntegerKeyedDocument.class, 
+				new All<IntegerKeyedDocument>(), 
+				new IntegerMin<IntegerKeyedDocument>(getIntegerKeyedDocumentKey()));
+		
+		assertThat(min, is(1));
 	}
 	
 	@Test

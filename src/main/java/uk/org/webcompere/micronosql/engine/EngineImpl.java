@@ -15,6 +15,7 @@ import uk.org.webcompere.micronosql.mapreducesort.MappedItem;
 import uk.org.webcompere.micronosql.mapreducesort.MappedItemComparator;
 import uk.org.webcompere.micronosql.mapreducesort.Mapping;
 import uk.org.webcompere.micronosql.mapreducesort.Predicate;
+import uk.org.webcompere.micronosql.mapreducesort.Transformation;
 import uk.org.webcompere.micronosql.storage.ItemTransfer;
 import uk.org.webcompere.micronosql.storage.StorageManager;
 
@@ -180,6 +181,23 @@ public class EngineImpl implements Engine {
 
 	}
 	
+
+	@Override
+	public <T, R> R createTransformation(Class<T> type, Predicate<T> predicate, Transformation<T, R> transformation) {
+		R result = null;
+		for (String key:findAllKeys(type)) {
+			T item = find(key, type);
+			if (predicate.includes(item)) {
+				if (result == null) {
+					result = transformation.transform(item);
+				} else {
+					result = transformation.aggregate(item, result);
+				}
+			}
+		}
+		return result;
+	}
+	
 	public StorageManager getStorageManager() {
 		return storageManager;
 	}
@@ -205,6 +223,4 @@ public class EngineImpl implements Engine {
 			allMatchingKeys.add(item.getKey());
 		}
 	}
-
-
 }
