@@ -12,7 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import uk.org.webcompere.micronosql.mapreducesort.StringAscending;
-import uk.org.webcompere.micronosql.pojo.ExampleDocument;
 import uk.org.webcompere.micronosql.pojo.ExampleDocumentWithKeyGeneration;
 import uk.org.webcompere.micronosql.storage.StorageManagerFileSystem;
 import uk.org.webcompere.micronosql.util.FileUtil;
