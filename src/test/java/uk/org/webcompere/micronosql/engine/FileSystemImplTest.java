@@ -70,7 +70,7 @@ public class FileSystemImplTest {
 		fileSystem.writeFile(root+"file3", "");
 		fileSystem.writeFile(root+"file4", "");
 		
-		assertThat(fileSystem.listFiles(root), contains("file1", "file2", "file3", "file4"));
+		assertThat(fileSystem.listFiles(root), containsInAnyOrder("file1", "file2", "file3", "file4"));
 	}
 	
 	@Test
