@@ -6,10 +6,7 @@ import java.util.Set;
 
 import uk.org.webcompere.micronosql.mapreducesort.Mapping;
 import uk.org.webcompere.micronosql.mapreducesort.Predicate;
-import uk.org.webcompere.micronosql.mapreducesort.StringAscending;
 import uk.org.webcompere.micronosql.mapreducesort.Transformation;
-import uk.org.webcompere.micronosql.pojo.ExampleDocument;
-
 
 public interface Engine {
 

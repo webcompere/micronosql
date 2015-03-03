@@ -4,6 +4,7 @@ package uk.org.webcompere.micronosql.engine;
 import java.util.HashSet;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.mockito.Mockito.*;
@@ -36,6 +37,7 @@ public class EngineIndexTest {
 		assertThat(engine.findAllKeys(ExampleDocument.class).size(), is(0));
 	}
 	
+	@Ignore("Not implemented")
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void readingFromIndexedEntityHasNoIndexHitButIndexRetrieve() {
@@ -48,6 +50,7 @@ public class EngineIndexTest {
 		verify(storageManagerMock, times(0)).findAllKeys(IndexedEntity.class);
 	}
 	
+	@Ignore("Not implemented")
 	@Test
 	public void readingFromIndexedEntityHasNoIndexHitButIndexRetrieveAllItems() {
 		KeyIndex<IndexedEntity> keyIndex = new KeyIndex<IndexedEntity>(IndexedEntity.class);

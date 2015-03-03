@@ -4,13 +4,11 @@ import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import uk.org.webcompere.micronosql.annotation.Key;
 import uk.org.webcompere.micronosql.annotation.KeyGenerator;
 import uk.org.webcompere.micronosql.annotation.NoKeyGenerator;
-import uk.org.webcompere.micronosql.pojo.ExampleDocumentWithKeyGeneration;
 
 /**
  * Helps the engine to interpret documents
